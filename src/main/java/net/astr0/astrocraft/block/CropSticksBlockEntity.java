@@ -1,6 +1,8 @@
 package net.astr0.astrocraft.block;
 
 import com.mojang.logging.LogUtils;
+import dev.engine_room.flywheel.lib.visualization.VisualizationHelper;
+import net.astr0.astrocraft.Astrocraft;
 import net.astr0.astrocraft.farming.*;
 import net.astr0.astrocraft.recipe.CrossbreedingRecipe;
 import net.minecraft.core.BlockPos;
@@ -41,11 +43,19 @@ public class CropSticksBlockEntity extends BlockEntity {
     public void setSeed(ItemStack stack) {
         this.seedStack = stack.copy();
         this.seedStack.setCount(1);
-
         this.cachedPlant = CropUtils.getPlantedCrop(this.seedStack);
-        this.setChanged();
-        //level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState().setValue(CropSticksBlock.AGE, 0), 2);
-        level.setBlockAndUpdate(this.worldPosition, getBlockState().setValue(CropSticksBlock.AGE, 0));
+
+        if (!level.isClientSide()) {
+            this.setChanged();
+            boolean isSeeded = !this.seedStack.isEmpty();
+            // Always produces a real state change on seed transitions,
+            // guaranteed to be different from the prior state
+            level.setBlock(worldPosition,
+                    getBlockState()
+                            .setValue(CropSticksBlock.AGE, 0)
+                            .setValue(CropSticksBlock.SEEDED, isSeeded),
+                    3); // flag 3 = update + notify clients
+        }
     }
 
     public ItemStack getSeed() {
@@ -296,10 +306,20 @@ public class CropSticksBlockEntity extends BlockEntity {
         super.load(tag);
         if (tag.contains("Seed")) {
             this.seedStack = ItemStack.of(tag.getCompound("Seed"));
-            this.cachedPlant = CropUtils.getPlantedCrop(this.seedStack);
+        } else {
+            this.seedStack = ItemStack.EMPTY;
         }
-        // Load the weed tracker
+        this.cachedPlant = CropUtils.getPlantedCrop(this.seedStack);
         this.emptyTicks = tag.getInt("EmptyTicks");
+
+        Astrocraft.LOGGER.info("[CLIENT] load() called at {} - seed resolved to: {}, cachedPlant: {}",
+                worldPosition,
+                seedStack,
+                cachedPlant != null ? cachedPlant.toString() : "NULL");
+
+        if (level != null && level.isClientSide()) {
+            VisualizationHelper.queueUpdate(this);
+        }
     }
 
     @Override
@@ -317,11 +337,17 @@ public class CropSticksBlockEntity extends BlockEntity {
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag);
+        Astrocraft.LOGGER.info("[SERVER] getUpdateTag called at {} - seed: {}, seeded: {}",
+                worldPosition,
+                tag.contains("Seed") ? tag.getCompound("Seed") : "EMPTY",
+                getBlockState().getValue(CropSticksBlock.SEEDED));
         return tag;
     }
 
     @Override
     public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        Astrocraft.LOGGER.info("[SERVER] getUpdatePacket called at {} - seed: {}",
+                worldPosition, seedStack);
         return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 }

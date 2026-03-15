@@ -2,8 +2,10 @@ package net.astr0.astrocraft.network;
 
 import net.astr0.astrocraft.Astrocraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public class AsTechNetworkHandler {
@@ -28,6 +30,14 @@ public class AsTechNetworkHandler {
                 ServerboundSetToolModePacket::decode,
                 ServerboundSetToolModePacket::handle,
                 java.util.Optional.of(NetworkDirection.PLAY_TO_SERVER)
+        );
+        INSTANCE.registerMessage(5, CropSeedUpdatePacket.class,CropSeedUpdatePacket::encode, CropSeedUpdatePacket::decode, CropSeedUpdatePacket::handle);
+    }
+
+    public static <T> void SendLocalBlockEntityUpdate(BlockEntity tile, T packet) {
+        INSTANCE.send(
+                PacketDistributor.TRACKING_CHUNK.with(() -> tile.getLevel().getChunkAt(tile.getBlockPos())),
+                packet
         );
     }
 

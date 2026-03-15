@@ -62,8 +62,6 @@ public class Astrocraft
     // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
 
-
-
     public Astrocraft()
     {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TradeConfig.SPEC);

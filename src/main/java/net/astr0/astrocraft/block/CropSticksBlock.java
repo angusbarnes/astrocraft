@@ -17,6 +17,8 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CropSticksBlock extends CropBlock implements EntityBlock, BonemealableBlock {
-
+    public static final BooleanProperty SEEDED = BooleanProperty.create("seeded");
     private final VoxelShape STICK1 = Block.box(1.0D, 0.0D,  1.0D, 2.0D, 16.0D, 2.0D);
     private final VoxelShape STICK2 = Block.box(14.0D,0.0D, 14.0D, 15.0D, 16.0D, 15.0D);
     private final VoxelShape STICK3 = Block.box(1.0D, 0.0D, 14.0D, 2.0D, 16.0D, 15.0D);
@@ -38,7 +40,11 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
     //public static final IntegerProperty AGE = BlockStateProperties.AGE_7;
     public CropSticksBlock(Properties props) {
         super(Properties.copy(Blocks.WHEAT));
-       // this.registerDefaultState(this.stateDefinition.any().setValue(AGE, 0));
+        this.registerDefaultState(
+                this.stateDefinition.any()
+                        .setValue(AGE, 0)
+                        .setValue(SEEDED, false)
+        );
     }
 
     @Override
@@ -102,14 +108,17 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
 
         if (held.getItem() instanceof ShearsItem) {
 
+            // Clear weeds
             if (cropBE.hasWeeds()) {
                 cropBE.clearWeeds();
+                //level.setBlock(pos, state.setValue(AGE, 0), 2);
                 return InteractionResult.SUCCESS;
             }
 
+            //Auto re-plant
             if (cropBE.readyForHarvest()) {
                 doStandardDrops(drops, currentSeed, level, pos, true);
-                level.setBlock(pos, state.setValue(AGE, 0), 2);
+                level.setBlock(pos, state.setValue(AGE, 0).setValue(SEEDED, true), 2);
                 return InteractionResult.SUCCESS;
             }
 
@@ -120,6 +129,7 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
             return InteractionResult.PASS;
         }
 
+        // Swap seed
         if (heldPlant != null && !currentSeed.isEmpty() && !ItemStack.isSameItemSameTags(held, currentSeed)) {
 
             if (state.getValue(AGE) == 7) {
@@ -133,20 +143,24 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
             held.shrink(1);
 
             // Reset age to 0 for the new plant
-            level.setBlock(pos, state.setValue(AGE, 0), 2);
+            //level.setBlock(pos, state.setValue(AGE, 0), 2);
             return InteractionResult.SUCCESS;
         }
 
+        // Plant seed
         if (currentSeed.isEmpty() && heldPlant != null) {
             cropBE.setSeed(held);
             held.shrink(1);
+            //level.setBlock(pos, state.setValue(AGE, 0), 2);
             return InteractionResult.SUCCESS;
         }
 
+        // standard harvest
         if (cropBE.readyForHarvest()) {
             doStandardDrops(drops, currentSeed, level, pos);
             state.setValue(AGE, 0);
             cropBE.setSeed(ItemStack.EMPTY);
+            //level.setBlock(pos, state.setValue(AGE, 0).setValue(SEEDED, false), 2);
             return InteractionResult.SUCCESS;
         }
 
@@ -224,25 +238,14 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
         }
     }
 
-
-//    @Override
-//    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
-//        return SHAPE;
-//    }
-//
-//
-//    @Override
-//    public VoxelShape getInteractionShape(BlockState pState, BlockGetter pLevel, BlockPos pPos) {
-//        return INTERACTION_SHAPE;
-//    }
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+        super.createBlockStateDefinition(pBuilder);
+        pBuilder.add(SEEDED);
+    }
 
     @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.MODEL;
     }
-
-//    @Override
-//    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-//        builder.add(AGE);
-//    }
 }

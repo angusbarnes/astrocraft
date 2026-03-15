@@ -7,8 +7,10 @@ import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
 import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
+import net.astr0.astrocraft.block.CropSticksBlock;
 import net.astr0.astrocraft.block.CropSticksBlockEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.function.Consumer;
 
@@ -37,8 +39,11 @@ public class CropSticksVisual extends AbstractBlockEntityVisual<CropSticksBlockE
                 Models.block(blockEntity.getSimulatedPlantState())
         );
         transformedInstance = cropModelInstancer.createInstance();
+        lastSeed = blockEntity.getSeed();
+        lastAge = blockEntity.getBlockState().getValue(BlockStateProperties.AGE_7);
 
         setupVisual(partialTick);
+        Astrocraft.LOGGER.info("Creating CropSticksVisual {}", blockEntity.getLevel().isClientSide() ? "client" : "server");
     }
 
     @Override
@@ -46,38 +51,41 @@ public class CropSticksVisual extends AbstractBlockEntityVisual<CropSticksBlockE
         transformedInstance.delete();
     }
 
+    @Override
+    public void update(float partialTick) {
+
+        ItemStack currentSeed = blockEntity.getSeed();
+        int currentAge = blockEntity.getBlockState().getValue(CropSticksBlock.AGE);
+
+        boolean seedChanged = !ItemStack.isSameItemSameTags(currentSeed, lastSeed);
+        boolean ageChanged = currentAge != lastAge;
+
+        if (seedChanged) {
+            // Delete old instance and rebuild with the new model
+            transformedInstance.delete();
+
+            transformedInstance = instancerProvider()
+                    .instancer(InstanceTypes.TRANSFORMED,
+                            Models.block(blockEntity.getSimulatedPlantState()))
+                    .createInstance();
+
+            setupVisual(partialTick);
+            relight(transformedInstance);
+
+            lastSeed = currentSeed.copy();
+            lastAge = currentAge;
+        }
+
+        Astrocraft.LOGGER.info("[VISUAL] update() called - SEEDED: {}, seed: {}, cachedPlant: {}",
+                currentAge,
+                currentSeed,
+                blockEntity.getSimulatedPlantState());
+    }
+
     // We might not need this
     private void setupVisual(float partialTicks) {
         transformedInstance.setIdentityTransform().translate(getVisualPosition()).setChanged();
-//        float lidAngle = blockEntity.lid.getValue(partialTicks);
-//        float drawerOffset = blockEntity.drawers.getValue(partialTicks);
-//
-//        if (lidAngle != lastLidAngle) {
-//            lid.setIdentityTransform()
-//                    .translate(getVisualPosition())
-//                    .center()
-//                    .rotateYDegrees(-facing.toYRot())
-//                    .uncenter()
-//                    .translate(0, 6 / 16f, 12 / 16f)
-//                    .rotateXDegrees(135 * lidAngle)
-//                    .translateBack(0, 6 / 16f, 12 / 16f)
-//                    .setChanged();
-//        }
-//
-//        if (drawerOffset != lastDrawerOffset) {
-//            for (int offset : Iterate.zeroAndOne) {
-//                drawers[offset].setIdentityTransform()
-//                        .translate(getVisualPosition())
-//                        .center()
-//                        .rotateYDegrees(-facing.toYRot())
-//                        .uncenter()
-//                        .translate(0, offset * 1 / 8f, -drawerOffset * .175f * (2 - offset))
-//                        .setChanged();
-//            }
-//        }
-//
-//        lastLidAngle = lidAngle;
-//        lastDrawerOffset = drawerOffset;
+        Astrocraft.LOGGER.info("Setting up CropSticksVisual {}", blockEntity.getLevel().isClientSide() ? "client" : "server");
     }
 
     @Override
