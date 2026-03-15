@@ -9,6 +9,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
 import net.minecraft.world.level.BlockGetter;
@@ -127,6 +128,11 @@ public class CropSticksBlock extends CropBlock implements EntityBlock, Bonemeala
 
         if(cropBE.hasWeeds()) {
             return InteractionResult.PASS;
+        }
+
+        if (player.getItemInHand(hand).getItem() instanceof HoeItem) {
+            doStandardDrops(drops, currentSeed, level, pos);
+            cropBE.setSeed(ItemStack.EMPTY);
         }
 
         // Swap seed
