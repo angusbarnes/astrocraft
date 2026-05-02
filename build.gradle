@@ -98,7 +98,7 @@ repositories {
         }
     }
 
-
+    //mavenCentral()
     maven {
         name = "Illusive Soulworks maven"
         url = "https://maven.theillusivec4.top/"
@@ -137,6 +137,11 @@ repositories {
     maven { url = "https://maven.ithundxr.dev/mirror" } // Registrate
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = 'https://maven.rover656.dev/releases' }
+
+//    maven {
+//        name 'DVS1 Maven FS'
+//        url 'https://dvs1.progwml6.com/files/maven'
+//    }
 }
 
 dependencies {
@@ -195,6 +200,9 @@ dependencies {
     runtimeOnly fg.deobf("maven.modrinth:fusion-connected-textures:1.1.1-forge-mc1.20.1")
     runtimeOnly(fg.deobf("blank:CTM-1.20.1:1.1.10"))
     //runtimeOnly(fg.deobf("blank:kubejs-forge-2001.6.4:build.138"))
+
+    implementation fg.deobf("blank:Mantle:${minecraft_version}-${mantle_build}")
+    implementation fg.deobf("blank:TConstruct:${minecraft_version}-${tinkers_build}")
 }
 
 mixin {
