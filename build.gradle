@@ -138,6 +138,12 @@ repositories {
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/" } // ForgeConfigAPIPort
     maven { url = 'https://maven.rover656.dev/releases' }
 
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
+
 //    maven {
 //        name 'DVS1 Maven FS'
 //        url 'https://dvs1.progwml6.com/files/maven'
@@ -201,8 +207,8 @@ dependencies {
     runtimeOnly(fg.deobf("blank:CTM-1.20.1:1.1.10"))
     //runtimeOnly(fg.deobf("blank:kubejs-forge-2001.6.4:build.138"))
 
-    implementation fg.deobf("blank:Mantle:${minecraft_version}-${mantle_build}")
-    implementation fg.deobf("blank:TConstruct:${minecraft_version}-${tinkers_build}")
+    implementation fg.deobf("slimeknights.mantle:Mantle:${minecraft_version}-${mantle_build}")
+    implementation fg.deobf("slimeknights.tconstruct:TConstruct:${minecraft_version}-${tinkers_build}")
 }
 
 mixin {
