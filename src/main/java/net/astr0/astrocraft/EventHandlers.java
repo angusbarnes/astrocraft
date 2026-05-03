@@ -7,6 +7,7 @@ import net.astr0.astrocraft.farming.FarmingNBT;
 import net.astr0.astrocraft.item.KeyItem;
 import net.astr0.astrocraft.item.ModItems;
 import net.astr0.astrocraft.trading.TradeConfig;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -121,6 +122,30 @@ public class EventHandlers {
         }
 
         return 0;
+    }
+
+    public static void forgeQualityToolTip(ItemTooltipEvent tooltip) {
+        ItemStack stack = tooltip.getItemStack();
+        if (!stack.is(ModTags.FORGEABLE_PART)) return;
+
+        CompoundTag tag = stack.getOrCreateTag();
+        if (tag.contains("forgingQuality")) {
+            float quality = tag.getFloat("forgingQuality");
+
+            if (quality >= 0.3 && quality <= 0.6) {
+                tooltip.getToolTip().add(
+                        Component.literal("Part Quality: ⭐").withStyle(ChatFormatting.AQUA)
+                );
+            } else if (0.6 < quality && quality <= 0.85) {
+                tooltip.getToolTip().add(Component.literal("Part Quality: ⭐⭐").withStyle(ChatFormatting.GREEN));
+            } else if (quality > 0.85) {
+                tooltip.getToolTip().add(Component.literal("Part Quality: ⭐⭐⭐").withStyle(ChatFormatting.GOLD));
+            } else {
+                tooltip.getToolTip().add(Component.literal("Part Quality: Poor").withStyle(ChatFormatting.RED));
+            }
+        } else {
+            tooltip.getToolTip().add(Component.literal("Part Quality: Crude").withStyle(ChatFormatting.DARK_RED));
+        }
     }
 
     public static void addSeedTooltips(ItemTooltipEvent tooltip) {

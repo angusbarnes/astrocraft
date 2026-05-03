@@ -347,6 +347,9 @@ headers, chemicals = get_chemical_defs("chems.csv")
 datapack = Context('../resources/', 'astrocraft')
 
 datapack.set_base_dictionary({
+    "block.astrocraft.forge_anvil":      "Forging Anvil",
+    "gui.astrocraft.forging.title":      "FORGING",
+    "gui.astrocraft.forging.strikes":    "Strikes",
     "modifier.astrocraft.forged": "Forged",
     "modifier.astrocraft.forged.flavor": "The work of a master?",
     "modifier.astrocraft.forged.description": "Skillfully forge the head of your tool piece for better stats",
@@ -951,6 +954,7 @@ datapack.add_item_tag("astrocraft:seed_groups/grass", "minecraft:wheat_seeds")
 datapack.add_item_tag("astrocraft:seed_groups/dirt", "minecraft:potato" )
 datapack.add_item_tag("astrocraft:seed_groups/vege", "minecraft:carrot" )
 
+datapack.add_item_tag("forge:forgeable_part", "#tconstruct:parts" )
 
 datapack.add_simple_item_model("harddrive")
 datapack.add_simple_item_model("nasdrive")

@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "astrocraft:block/forge_anvil" }
+  }
+}

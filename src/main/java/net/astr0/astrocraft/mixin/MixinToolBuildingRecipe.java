@@ -50,8 +50,8 @@ public class MixinToolBuildingRecipe {
                 if (slotStack.getItem() instanceof IToolPart) {
                     partCount++; // Unforged parts still count, pulling the average down
 
-                    if (slotStack.hasTag() && slotStack.getTag().contains(TiCKeys.QUALITY_KEY.toString())) {
-                        totalQuality += slotStack.getTag().getFloat(TiCKeys.QUALITY_KEY.toString());
+                    if (slotStack.hasTag() && slotStack.getTag().contains("forgingQuality")) {
+                        totalQuality += slotStack.getTag().getFloat("forgingQuality");
                     }
                 }
             }

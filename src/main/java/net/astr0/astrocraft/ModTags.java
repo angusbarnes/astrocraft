@@ -14,6 +14,9 @@ public class ModTags {
     public static ResourceLocation RL(String path) {
         return new ResourceLocation("astrocraft", path);
     }
+    public static ResourceLocation FORGE_RL(String path) {
+        return ResourceLocation.fromNamespaceAndPath("forge", path);
+    }
 
     public static final TagKey<Block> BLOCK_CABLE = BlockTags.create(RL("cable_block"));
     public static TagKey<Block> MACHINE_CASING = BlockTags.create(RL("casing"));
@@ -36,4 +39,7 @@ public class ModTags {
     public static final TagKey<Fluid> PHOTORESIST_TAG = FluidTags.create(RL("photoresist"));
     public static final TagKey<Fluid> TIER_1_PHOTORESIST = FluidTags.create(RL("photoresist/tier_1"));
     public static final TagKey<Fluid> TIER_2_PHOTORESIST = FluidTags.create(RL("photoresist/tier_2"));
+
+    public static final TagKey<Item> FORGEABLE_PART = ItemTags.create(FORGE_RL("forgeable_part"));
+    public static final TagKey<Item> HAMMERS = ItemTags.create(FORGE_RL("tools/hammers"));
 }

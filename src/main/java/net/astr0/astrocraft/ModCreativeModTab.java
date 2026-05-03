@@ -24,6 +24,7 @@ public class ModCreativeModTab {
                     .title(Component.translatable("creativetab.astrocraft_tab"))
                     .displayItems((itemDisplayParameters, output) -> {
                         output.accept(ModItems.TREE_KEY.get());
+                        output.accept(ModBlocks.FORGE_ANVIL.get());
                         output.accept(ModItems.OVERWORLD_KEY.get());
                         output.accept(ModItems.END_KEY.get());
                         output.accept(ModItems.NETHER_KEY.get());

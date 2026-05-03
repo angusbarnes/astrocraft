@@ -31,6 +31,9 @@ public class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<BrickKilnBlockEntity>> BRICK_KILN =
             BLOCK_ENTITIES.register("brick_kiln", () -> BlockEntityType.Builder.of(BrickKilnBlockEntity::new, ModBlocks.BRICK_KILN.get()).build(null));
 
+    public static final RegistryObject<BlockEntityType<ForgeAnvilBlockEntity>> FORGE_ANVIL =
+            BLOCK_ENTITIES.register("forge_anvil", () -> BlockEntityType.Builder.of(ForgeAnvilBlockEntity::new, ModBlocks.FORGE_ANVIL.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<CropSticksBlockEntity>> CROP_STICKS =
             BLOCK_ENTITIES.register("crop_sticks", () -> BlockEntityType.Builder.of(CropSticksBlockEntity::new, ModBlocks.CROP_STICKS.get()).build(null));
 

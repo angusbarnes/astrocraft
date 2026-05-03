@@ -15,8 +15,10 @@ import net.astr0.astrocraft.block.ModBlockEntities;
 import net.astr0.astrocraft.block.ModBlocks;
 import net.astr0.astrocraft.block.PyrolysisChamber.PyrolysisChamberScreen;
 import net.astr0.astrocraft.block.ReactionChamber.ChemicalReactorScreen;
+import net.astr0.astrocraft.client.gui.ForgingHudOverlay;
 import net.astr0.astrocraft.client.gui.ModMenuTypes;
 import net.astr0.astrocraft.client.input.RadialMenuKeyHandler;
+import net.astr0.astrocraft.client.render.ForgeAnvilBER;
 import net.astr0.astrocraft.compat.CompatManager;
 import net.astr0.astrocraft.compat.mek.AstrocraftSlurries;
 import net.astr0.astrocraft.compat.tic.ModifierRecipeProvider;
@@ -39,6 +41,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.data.event.GatherDataEvent;
@@ -201,16 +204,23 @@ public class Astrocraft
 
             MinecraftForge.EVENT_BUS.register(new RadialMenuKeyHandler());
             MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, EventHandlers::addSeedTooltips);
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, EventHandlers::forgeQualityToolTip);
 
         }
 
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(ModBlockEntities.BRICK_KILN.get(), BrickKilnRenderer::new);
+            event.registerBlockEntityRenderer(ModBlockEntities.FORGE_ANVIL.get(), ForgeAnvilBER::new);
             //event.registerBlockEntityRenderer(ModBlockEntities.CROP_STICKS.get(), CropSticksRenderer::new);
         }
 
-
+        @SubscribeEvent
+        public static void onRegisterOverlays(RegisterGuiOverlaysEvent event) {
+            event.registerAboveAll(
+                    "forging_hud",
+                    ForgingHudOverlay.INSTANCE);
+        }
 
     }
 }

@@ -32,6 +32,7 @@ public class AsTechNetworkHandler {
                 java.util.Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
         INSTANCE.registerMessage(5, CropSeedUpdatePacket.class,CropSeedUpdatePacket::encode, CropSeedUpdatePacket::decode, CropSeedUpdatePacket::handle);
+        INSTANCE.registerMessage(6, C2SStrikePacket.class, C2SStrikePacket::encode, C2SStrikePacket::decode, C2SStrikePacket::handle);
     }
 
     public static <T> void SendLocalBlockEntityUpdate(BlockEntity tile, T packet) {

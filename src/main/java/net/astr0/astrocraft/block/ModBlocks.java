@@ -79,6 +79,9 @@ public class ModBlocks {
     public static final RegistryObject<Block> BRICK_KILN = registerBlock("brick_kiln",
             () -> new BrickKilnBlock(BlockBehaviour.Properties.copy(Blocks.BRICKS).noOcclusion()));
 
+    public static final RegistryObject<Block> FORGE_ANVIL = registerBlock("forge_anvil",
+            () -> new ForgeAnvilBlock(BlockBehaviour.Properties.copy(Blocks.ANVIL).noOcclusion()));
+
     public static final RegistryObject<Block> CROP_STICKS = registerBlock("crop_sticks",
             () -> new CropSticksBlock(BlockBehaviour.Properties.copy(Blocks.OAK_FENCE).noOcclusion()));
 
