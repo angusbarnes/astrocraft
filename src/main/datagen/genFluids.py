@@ -347,6 +347,9 @@ headers, chemicals = get_chemical_defs("chems.csv")
 datapack = Context('../resources/', 'astrocraft')
 
 datapack.set_base_dictionary({
+    "modifier.astrocraft.forged": "Forged",
+    "modifier.astrocraft.forged.flavor": "The work of a master?",
+    "modifier.astrocraft.forged.description": "Skillfully forge the head of your tool piece for better stats",
     "curios.identifier.key": "Key",
     "config.jade.plugin_astrocraft.crop" : "Crop",
     "item.astrocraft.fluid_cell" : "Fluid Cell",

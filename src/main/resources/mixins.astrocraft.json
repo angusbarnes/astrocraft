@@ -6,7 +6,8 @@
   "refmap": "mixins.astrocraft.refmap.json",
   "mixins": [
     "MixinEnderman",
-    "EnderIOTravelStaffMixin"
+    "EnderIOTravelStaffMixin",
+    "MixinToolBuildingRecipe"
   ],
   "injectors": {
     "defaultRequire": 1

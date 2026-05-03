@@ -19,6 +19,8 @@ import net.astr0.astrocraft.client.gui.ModMenuTypes;
 import net.astr0.astrocraft.client.input.RadialMenuKeyHandler;
 import net.astr0.astrocraft.compat.CompatManager;
 import net.astr0.astrocraft.compat.mek.AstrocraftSlurries;
+import net.astr0.astrocraft.compat.tic.ModifierRecipeProvider;
+import net.astr0.astrocraft.compat.tic.TiCRegistration;
 import net.astr0.astrocraft.farming.GeneticsEventHandler;
 import net.astr0.astrocraft.item.*;
 import net.astr0.astrocraft.network.AsTechNetworkHandler;
@@ -27,6 +29,8 @@ import net.astr0.astrocraft.trading.TradeConfig;
 import net.astr0.astrocraft.trading.TradeEventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionResult;
@@ -37,6 +41,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -44,7 +49,6 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -66,11 +70,13 @@ public class Astrocraft
     {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, TradeConfig.SPEC);
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        CompatManager.init();
 
         // Register the commonSetup method for mod loading
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::endSetup);
         modEventBus.addListener(this::registerKeys);
+        modEventBus.addListener(this::gatherData);
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);
@@ -85,8 +91,13 @@ public class Astrocraft
         ModRecipes.register(modEventBus);
         SoundRegistry.register(modEventBus);
 
-        if(ModList.get().isLoaded("mekanism")) {
+        if(CompatManager.isMekanismLoaded) {
             AstrocraftSlurries.SLURRIES.register(modEventBus);
+        }
+
+        if(CompatManager.isTiCLoaded) {
+            TiCRegistration.register(modEventBus);
+            LOGGER.info("[ASTROCRAFT] TiC integration loaded");
         }
 
         MinecraftForge.EVENT_BUS.register(this);
@@ -114,6 +125,13 @@ public class Astrocraft
         forgeEventBus.addListener(EventPriority.LOWEST, GeneticsEventHandler::onServerStarted);
     }
 
+    @SubscribeEvent
+    void gatherData(final GatherDataEvent event) {
+        DataGenerator generator = event.getGenerator();
+        PackOutput packOutput = generator.getPackOutput();
+        generator.addProvider(event.includeServer(), new ModifierRecipeProvider(packOutput));
+    }
+
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         // Some common setup code
@@ -126,7 +144,7 @@ public class Astrocraft
     }
 
     private void endSetup(final FMLLoadCompleteEvent event) {
-        CompatManager.init();
+        //CompatManager.init();
     }
 
     // Add the example block item to the building blocks tab

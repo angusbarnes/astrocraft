@@ -1,0 +1,20 @@
+{
+  "type": "tconstruct:modifier",
+  "allow_crystal": true,
+  "inputs": [
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:diamond"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    }
+  ],
+  "level": 1,
+  "result": "astrocraft:forged",
+  "tools": {
+    "tag": "tconstruct:modifiable"
+  }
+}
