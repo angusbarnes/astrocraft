@@ -47,7 +47,7 @@ public class CropSticksBlockEntity extends BlockEntity {
 
         if (!level.isClientSide()) {
             this.setChanged();
-            boolean isSeeded = !this.seedStack.isEmpty();
+            boolean isSeeded = !getBlockState().getValue(CropSticksBlock.SEEDED);
             // Always produces a real state change on seed transitions,
             // guaranteed to be different from the prior state
             level.setBlock(worldPosition,
