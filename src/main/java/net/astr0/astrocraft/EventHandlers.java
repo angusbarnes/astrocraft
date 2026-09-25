@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -113,11 +114,13 @@ public class EventHandlers {
         // We only care about preventing tree chopping
         if (!state.is(BlockTags.LOGS)) return speed;
 
+        // Once a player gets a key, we don't worry about stopping it
+        if (getKeyFromPlayer(player) != null) return speed;
+
         ItemStack tool = player.getMainHandItem();
 
-        // This might be a bit of a hack but we will generally assume that all tools with durability are fine
-        //TODO: Fix this potential bug which will allow wood access to early, perhaps pivot to curios based thing
-        if (tool.isDamageableItem()) {
+        // If the player hasn't got the key yet, check if an axe is being used
+        if (tool.is(ItemTags.AXES)) {
             return speed;
         }
 
@@ -176,7 +179,6 @@ public class EventHandlers {
     public static void DoCampfireConversion(TickEvent.LevelTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.level.isClientSide() || !event.level.dimensionTypeId().location().getPath().equals("overworld"))
             return;
-
         Level level = event.level;
 
         Iterator<Map.Entry<BlockPos, Integer>> it = dryingLogs.entrySet().iterator();
