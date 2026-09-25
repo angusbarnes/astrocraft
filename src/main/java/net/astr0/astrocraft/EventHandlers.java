@@ -111,20 +111,27 @@ public class EventHandlers {
     }
 
     public static float modifyBreakSpeed(Player player, BlockState state, @Nullable BlockPos pos, float speed) {
+
+        boolean hasKey = getKeyFromPlayer(player) != null;
+        boolean isLog = state.is(BlockTags.LOGS);
+        boolean isShovelBlock = state.is(BlockTags.MINEABLE_WITH_SHOVEL);
+
         // We only care about preventing tree chopping
-        if (!state.is(BlockTags.LOGS)) return speed;
+        if (!(isLog || isShovelBlock)) return speed;
 
         // Once a player gets a key, we don't worry about stopping it
-        if (getKeyFromPlayer(player) != null) return speed;
+        if (hasKey) return speed;
 
         ItemStack tool = player.getMainHandItem();
 
         // If the player hasn't got the key yet, check if an axe is being used
-        if (tool.is(ItemTags.AXES)) {
-            return speed;
+        if (isLog) {
+            if (tool.is(ItemTags.AXES)) return speed;
+            return 0;
+        } else {
+            if (tool.is(ItemTags.SHOVELS)) return speed;
+            return 0.25f;
         }
-
-        return 0;
     }
 
     public static void forgeQualityToolTip(ItemTooltipEvent tooltip) {
