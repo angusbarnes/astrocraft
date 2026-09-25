@@ -24,6 +24,7 @@ import net.astr0.astrocraft.compat.mek.AstrocraftSlurries;
 import net.astr0.astrocraft.compat.tic.ModifierRecipeProvider;
 import net.astr0.astrocraft.compat.tic.TiCRegistration;
 import net.astr0.astrocraft.farming.GeneticsEventHandler;
+import net.astr0.astrocraft.farming.VanillaCrops;
 import net.astr0.astrocraft.item.*;
 import net.astr0.astrocraft.network.AsTechNetworkHandler;
 import net.astr0.astrocraft.recipe.ModRecipes;
@@ -176,6 +177,7 @@ public class Astrocraft
     {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
+        VanillaCrops.bootstrap();
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
