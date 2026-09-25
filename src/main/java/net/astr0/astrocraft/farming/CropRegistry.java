@@ -1,7 +1,11 @@
 package net.astr0.astrocraft.farming;
 
-import com.google.gson.*;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import net.astr0.astrocraft.Astrocraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
@@ -42,17 +46,19 @@ import java.util.*;
  */
 public class CropRegistry extends SimpleJsonResourceReloadListener {
 
-    public static final CropRegistry INSTANCE = new CropRegistry();
-
-    private static final Gson   GSON   = new GsonBuilder().create();
+    public static  CropRegistry instance = new CropRegistry();
     private static final Logger LOGGER = LogUtils.getLogger();
 
     /** Live registry — replaced atomically on each reload. */
     private Map<ResourceLocation, CropEntry> registry = Map.of();
 
     private CropRegistry() {
-        // "crop_registry" → scans data/<ns>/crop_registry/*.json across all packs
-        super(GSON, "crop_registry");
+        super(new GsonBuilder().create(), "crop_registry");
+    }
+
+    public static CropRegistry getInstance() {
+        if (instance == null) instance = new CropRegistry();
+        return instance;
     }
 
     // ── Resource loading ──────────────────────────────────────────────────
@@ -63,6 +69,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
             ResourceManager manager,
             ProfilerFiller profiler
     ) {
+        Astrocraft.LOGGER.info("Loading crop registry");
         Map<ResourceLocation, CropEntry> loaded  = new HashMap<>();
         int skippedMod  = 0;
         int skippedItem = 0;
@@ -70,7 +77,9 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
 
         for (Map.Entry<ResourceLocation, JsonElement> fileEntry : dataMap.entrySet()) {
             try {
-                JsonArray array = fileEntry.getValue().getAsJsonArray();
+                JsonObject rootObj = fileEntry.getValue().getAsJsonObject();
+                JsonArray array = rootObj.getAsJsonArray("entries");
+                Astrocraft.LOGGER.info("Trying to parse {}", fileEntry.getKey());
 
                 for (JsonElement element : array) {
                     JsonObject obj    = element.getAsJsonObject();
@@ -182,6 +191,22 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
         for (CropEntry entry : defaults) {
             merged.putIfAbsent(entry.item(), entry);
         }
+
+        Astrocraft.LOGGER.info("Loaded default crop registry, {} items", registry.entrySet().size());
         this.registry = Collections.unmodifiableMap(merged);
+    }
+
+    // ── Client sync ───────────────────────────────────────────────────────
+
+    /**
+     * Replaces the client-side registry with data received from the server.
+     * Called on the client thread via SyncCropRegistryPacket.
+     */
+    public void loadFromSync(java.util.List<CropEntry> entries) {
+        Astrocraft.LOGGER.info("Received CropRegistry from server");
+        Map<ResourceLocation, CropEntry> synced = new HashMap<>();
+        entries.forEach(e -> synced.put(e.item(), e));
+        this.registry = Collections.unmodifiableMap(synced);
+        LOGGER.info("CropRegistry: client synced {} entries from server", synced.size());
     }
 }

@@ -30,7 +30,9 @@ public class ModTags {
     public static TagKey<Item>  ENDERIO_TELEPORT_ITEM = ItemTags.create(new ResourceLocation("forge", "enderio_staff"));
 
     public static final TagKey<Item> CHEMICAL_PROTECTION = ItemTags.create(RL("chemical_protection"));
-    public static final TagKey<Item> FORGE_SEED = ItemTags.create(RL("chemical_protection"));
+
+    public static final TagKey<Item> FORGE_SEEDS = ItemTags.create(FORGE_RL("seeds"));
+    public static final TagKey<Item> COMMON_SEEDS = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c","seeds"));
 
 
     public static final TagKey<Fluid> TIER_1_COOLANT = FluidTags.create(new ResourceLocation("forge", "tier_1_coolant"));

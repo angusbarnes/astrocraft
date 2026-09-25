@@ -46,7 +46,7 @@ public final class VanillaCrops {
     public static void bootstrap() {
         // CropRegistry.registry is unmodifiable after apply(), so we use
         // the package-private merge helper — see note below.
-        CropRegistry.INSTANCE.mergeDefaults(ENTRIES);
+        CropRegistry.getInstance().mergeDefaults(ENTRIES);
     }
 
     // ── Helper ────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ public class CropRegistryEvents {
 
     @SubscribeEvent
     public static void onAddReloadListeners(AddReloadListenerEvent event) {
-        event.addListener(CropRegistry.INSTANCE);
+        event.addListener(CropRegistry.getInstance());
+        Astrocraft.LOGGER.info("ADDED CROP DATAPACK HANDLER");
     }
 }

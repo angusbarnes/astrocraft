@@ -58,7 +58,7 @@ public final class CropTooltip {
      *   Line 2:  Found in: ☀ Arid  ❄ Frost  ...
      */
     public static void appendTo(ItemStack stack, List<Component> tooltip) {
-        CropRegistry.INSTANCE.get(stack).ifPresent(entry -> {
+        CropRegistry.getInstance().get(stack).ifPresent(entry -> {
             tooltip.add(buildSummaryLine(entry));
             if (!entry.climates().isEmpty()) {
                 tooltip.add(buildClimateLine(entry));

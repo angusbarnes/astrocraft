@@ -127,6 +127,8 @@ public class Astrocraft
         forgeEventBus.addListener(EventPriority.HIGH, TabletEventHandler::onTabletModeToggle);
         forgeEventBus.addListener(EventPriority.LOWEST, GeneticsEventHandler::onTagsUpdated);
         forgeEventBus.addListener(EventPriority.LOWEST, GeneticsEventHandler::onServerStarted);
+//        forgeEventBus.addListener(EventPriority.LOWEST, EventHandlers::onPlayerLogin);
+//        forgeEventBus.addListener(EventPriority.LOWEST, EventHandlers::onDatapackSync);
     }
 
     @SubscribeEvent

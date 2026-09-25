@@ -3,10 +3,13 @@ package net.astr0.astrocraft;
 import com.mojang.logging.LogUtils;
 import net.astr0.astrocraft.block.ModBlocks;
 import net.astr0.astrocraft.farming.CropGenome;
+import net.astr0.astrocraft.farming.CropRegistry;
 import net.astr0.astrocraft.farming.CropTooltip;
 import net.astr0.astrocraft.farming.FarmingNBT;
 import net.astr0.astrocraft.item.KeyItem;
 import net.astr0.astrocraft.item.ModItems;
+import net.astr0.astrocraft.network.AsTechNetworkHandler;
+import net.astr0.astrocraft.network.SyncCropRegistryPacket;
 import net.astr0.astrocraft.trading.TradeConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -34,12 +37,14 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.event.OnDatapackSyncEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
@@ -161,7 +166,7 @@ public class EventHandlers {
 
     public static void addSeedTooltips(ItemTooltipEvent tooltip) {
         ItemStack stack = tooltip.getItemStack();
-        if (!stack.is(Tags.Items.SEEDS)) return;
+        if (!(stack.is(Tags.Items.SEEDS) || stack.is(ModTags.FORGE_SEEDS) || stack.is(ModTags.COMMON_SEEDS))) return;
 
         CropTooltip.appendTo(stack, tooltip.getToolTip());
 
@@ -218,6 +223,20 @@ public class EventHandlers {
                 entry.setValue(ticks + 1);
             }
         }
+    }
+
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        // ServerPlayer is guaranteed here — safe to send S→C
+        if (event.getEntity().getServer() == null) return;
+        Astrocraft.LOGGER.info("Attempting to sync CropRegistry");
+        AsTechNetworkHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() ->(ServerPlayer) event.getEntity()), new SyncCropRegistryPacket(CropRegistry.getInstance().getAll().values()));
+    }
+
+    public static void onDatapackSync(OnDatapackSyncEvent event) {
+        // event.getPlayer() is null on full reload (send to all), non-null on login (send to one)
+        Astrocraft.LOGGER.info("Attempting to sync CropRegistry");
+        var packet = new SyncCropRegistryPacket(CropRegistry.getInstance().getAll().values());
+        AsTechNetworkHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), packet);
     }
 
     public static void BlockPlaceListener(BlockEvent.EntityPlaceEvent event) {
