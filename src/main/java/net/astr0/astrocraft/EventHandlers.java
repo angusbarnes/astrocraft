@@ -3,6 +3,7 @@ package net.astr0.astrocraft;
 import com.mojang.logging.LogUtils;
 import net.astr0.astrocraft.block.ModBlocks;
 import net.astr0.astrocraft.farming.CropGenome;
+import net.astr0.astrocraft.farming.CropTooltip;
 import net.astr0.astrocraft.farming.FarmingNBT;
 import net.astr0.astrocraft.item.KeyItem;
 import net.astr0.astrocraft.item.ModItems;
@@ -161,6 +162,8 @@ public class EventHandlers {
     public static void addSeedTooltips(ItemTooltipEvent tooltip) {
         ItemStack stack = tooltip.getItemStack();
         if (!stack.is(Tags.Items.SEEDS)) return;
+
+        CropTooltip.appendTo(stack, tooltip.getToolTip());
 
         CompoundTag tag = stack.getTag();
         if (tag != null && tag.contains(FarmingNBT.CROP_GENOME_NBT)) {
