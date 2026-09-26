@@ -6,11 +6,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import net.astr0.astrocraft.Astrocraft;
+import net.astr0.astrocraft.common.StringUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
@@ -51,6 +56,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
 
     /** Live registry — replaced atomically on each reload. */
     private Map<ResourceLocation, CropEntry> registry = Map.of();
+    private Map<String, List<CropEntry>> GROUP_CACHE = Map.of();
 
     private CropRegistry() {
         super(new GsonBuilder().create(), "crop_registry");
@@ -71,6 +77,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
     ) {
         Astrocraft.LOGGER.info("Loading crop registry");
         Map<ResourceLocation, CropEntry> loaded  = new HashMap<>();
+        Map<String, List<CropEntry>> loadedGroups  = new HashMap<>();
         int skippedMod  = 0;
         int skippedItem = 0;
         int errors      = 0;
@@ -84,7 +91,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
                 for (JsonElement element : array) {
                     JsonObject obj    = element.getAsJsonObject();
                     String     rawId  = obj.get("item").getAsString();
-                    ResourceLocation itemId = new ResourceLocation(rawId);
+                    ResourceLocation itemId = ResourceLocation.parse(rawId);
 
                     // ── Failsafe 1: mod not installed → silent skip ────────
                     if (!ModList.get().isLoaded(itemId.getNamespace())) {
@@ -108,12 +115,19 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
                                 .forEach(c -> climates.add(c.getAsString().toLowerCase()));
                     }
 
-                    loaded.put(itemId, new CropEntry(
-                            itemId,
-                            obj.has("type")   ? obj.get("type").getAsString()   : "Unknown",
+                    String type = "Unknown";
+                    if (obj.has("type")) {
+                        type = obj.get("type").getAsString();
+                    }
+                    //TODO: make sure we arent leaking all over the place here
+                    CropEntry entry = new CropEntry(
+                            ForgeRegistries.ITEMS.getValue(itemId),
+                            type,
                             obj.has("rarity") ? obj.get("rarity").getAsString() : "Common",
                             Collections.unmodifiableSet(climates)
-                    ));
+                    );
+                    loaded.put(itemId, entry);
+                    loadedGroups.computeIfAbsent(type, k -> new ArrayList<>()).add(entry);
                 }
 
             } catch (Exception e) {
@@ -122,14 +136,16 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
                 errors++;
             }
         }
-
+        GROUP_CACHE = Collections.unmodifiableMap(loadedGroups);
         this.registry = Collections.unmodifiableMap(loaded);
         LOGGER.info("CropRegistry: loaded {} entries | skipped {} (mod absent), {} (bad item) | {} file errors",
                 loaded.size(), skippedMod, skippedItem, errors);
+
+        MinecraftForge.EVENT_BUS.post(new CropRegistryReloadEvent());
     }
 
     // ── Query API ─────────────────────────────────────────────────────────
-
+    //TODO: query by item reference first rather than string id first
     /**
      * Look up an entry by ItemStack. Returns empty if the item is unknown,
      * unregistered, or the stack is empty — never throws.
@@ -160,6 +176,10 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
         return get(stack).map(CropEntry::rarity).orElse("Unknown");
     }
 
+    public String getGroup(ItemStack item) {
+        return get(item).map(CropEntry::type).orElse("Unknown");
+    }
+
     /** All entries that include a given climate. */
     public List<CropEntry> getAllInClimate(String climate) {
         return registry.values().stream()
@@ -179,6 +199,16 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
         return registry;
     }
 
+    public Item getRandomSeedFromGroup(String groupName, RandomSource random) {
+
+        if (StringUtils.isNullOrEmpty(groupName)) return null;
+
+        List<CropEntry> candidates = GROUP_CACHE.get(groupName);
+        Astrocraft.LOGGER.info(">>>>>>>> trying to select {} from {}", groupName, GROUP_CACHE);
+        if (candidates == null || candidates.isEmpty()) return Items.AIR;
+        return candidates.get(random.nextInt(candidates.size())).item();
+    }
+
     // ── Dev / bootstrap ───────────────────────────────────────────────────
 
     /**
@@ -189,7 +219,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
     void mergeDefaults(java.util.List<CropEntry> defaults) {
         Map<ResourceLocation, CropEntry> merged = new HashMap<>(registry);
         for (CropEntry entry : defaults) {
-            merged.putIfAbsent(entry.item(), entry);
+            merged.putIfAbsent(ForgeRegistries.ITEMS.getKey(entry.item()), entry);
         }
 
         Astrocraft.LOGGER.info("Loaded default crop registry, {} items", registry.entrySet().size());
@@ -205,7 +235,7 @@ public class CropRegistry extends SimpleJsonResourceReloadListener {
     public void loadFromSync(java.util.List<CropEntry> entries) {
         Astrocraft.LOGGER.info("Received CropRegistry from server");
         Map<ResourceLocation, CropEntry> synced = new HashMap<>();
-        entries.forEach(e -> synced.put(e.item(), e));
+        entries.forEach(e -> synced.put(ForgeRegistries.ITEMS.getKey(e.item()), e));
         this.registry = Collections.unmodifiableMap(synced);
         LOGGER.info("CropRegistry: client synced {} entries from server", synced.size());
     }

@@ -107,7 +107,7 @@ public class CropSticksBlockEntity extends BlockEntity {
             if (level.getBlockEntity(pos) instanceof CropSticksBlockEntity be) {
                 // Check if they have a seed and valid genetics
                 // You might also want to check if AGE == 7 here so only mature crops breed!
-                if (!be.getSeed().isEmpty() && be.getGenes() != null) {
+                if (!be.getSeed().isEmpty() && be.getGenes() != null && be.getSimulatedPlantState().getValue(CropSticksBlock.AGE) == 7) {
                     validNeighbors.add(be);
                 }
             }
@@ -272,17 +272,20 @@ public class CropSticksBlockEntity extends BlockEntity {
     private boolean isValidRecipe(ItemStack seed1, ItemStack seed2) {
         List<CrossbreedingRecipe> specificRecipe = GeneticsCache.getSpecificRecipes(seed1, seed2);
 
+        //TODO: review if there is a functional purpose for this nonsense
         for (CrossbreedingRecipe recipe : specificRecipe) {
             _cachedRecipe = recipe;
             return true;
         }
 
+        Astrocraft.LOGGER.info(">>>>>>>> Looking for {} + {} recipe", CropRegistry.getInstance().getGroup(seed1), CropRegistry.getInstance().getGroup(seed2));
         List<CrossbreedingRecipe> groupRecipe = GeneticsCache.getGroupRecipes(
-                GeneticsCache.getGroupForItem(seed1.getItem()),
-                GeneticsCache.getGroupForItem(seed2.getItem())
+                CropRegistry.getInstance().getGroup(seed1),
+                CropRegistry.getInstance().getGroup(seed2)
         );
 
         for (CrossbreedingRecipe recipe : groupRecipe) {
+            Astrocraft.LOGGER.info(">>>>>>>> Found result: {}", recipe.getResultGroup());
             _cachedRecipe = recipe;
             return true;
         }
@@ -295,7 +298,8 @@ public class CropSticksBlockEntity extends BlockEntity {
         if (_cachedRecipe.isSpecific()) {
             return CropUtils.getPlantedCrop(_cachedRecipe.getResultItem());
         } else {
-            Item seed = GeneticsCache.getRandomSeedFromGroup(_cachedRecipe.getResultGroup(), RandomSource.create());
+            Item seed = CropRegistry.getInstance().getRandomSeedFromGroup(_cachedRecipe.getResultGroup(), RandomSource.create());
+            Astrocraft.LOGGER.info(">>>>>>>> Crafting crop: {}", seed);
             return CropUtils.getPlantedCrop(new ItemStack(seed));
         }
     }

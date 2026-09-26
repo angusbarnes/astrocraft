@@ -17,7 +17,7 @@ public class GeneticsEventHandler {
         }
     }
 
-    public static void onServerStarted(ServerStartedEvent event) {
+    public static void onServerStarted(ServerStartedEvent NOT_USED) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) {
             // Grab the Recipe Manager and trigger our cache rebuild!

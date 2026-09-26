@@ -33,7 +33,7 @@ public class AsTechNetworkHandler {
         );
         INSTANCE.registerMessage(5, CropSeedUpdatePacket.class,CropSeedUpdatePacket::encode, CropSeedUpdatePacket::decode, CropSeedUpdatePacket::handle);
         INSTANCE.registerMessage(6, C2SStrikePacket.class, C2SStrikePacket::encode, C2SStrikePacket::decode, C2SStrikePacket::handle);
-        INSTANCE.registerMessage(7, SyncCropRegistryPacket.class, SyncCropRegistryPacket::encode, SyncCropRegistryPacket::decode, SyncCropRegistryPacket::handle);
+        //INSTANCE.registerMessage(7, SyncCropRegistryPacket.class, SyncCropRegistryPacket::encode, SyncCropRegistryPacket::decode, SyncCropRegistryPacket::handle);
     }
 
     public static <T> void SendLocalBlockEntityUpdate(BlockEntity tile, T packet) {

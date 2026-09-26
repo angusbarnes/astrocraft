@@ -2,6 +2,7 @@ package net.astr0.astrocraft.farming;
 
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +54,7 @@ public final class VanillaCrops {
 
     private static CropEntry entry(String itemId, String type, String rarity, String... climates) {
         return new CropEntry(
-                new ResourceLocation(itemId),
+                ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemId)),
                 type,
                 rarity,
                 Set.of(climates)
